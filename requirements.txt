@@ -2,3 +2,5 @@ Flask
 pandas
 gunicorn
 wordcloud
+matplotlib 
+supabase 
