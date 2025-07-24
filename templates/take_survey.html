@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Form</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-image: url('https://media.istockphoto.com/id/1064746326/photo/survey-with-businessman.jpg?s=612x612&w=0&k=20&c=ONE_Wq4FgTxRE7131inWLFKAWj40-WKPncsPpfpWMjI=');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: rgba(255, 255, 255, 0.8);
+            background-blend-mode: overlay;
+            background-color: #eef2f6;
+
+            /* Central Alignment for the Survey Container */
+            display: flex;
+            justify-content: center; /* Horizontally center */
+            align-items: center;     /* Vertically center */
+            min-height: 100vh;       /* Full viewport height */
+            box-sizing: border-box;
+            padding: 20px;           /* Padding around the form */
+            overflow-y: auto;        /* Allow scrolling */
+        }
+
+        .survey-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 700px; /* Slightly wider to accommodate "Total Questions" and longer fields */
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-container {
+            display: flex; /* Still using flex for potential future layout changes, but for centering... */
+            flex-direction: column; /* Stack children vertically */
+            align-items: center;    /* Center items horizontally within this column */
+            margin-bottom: 30px;
+        }
+
+        .header-container h1 {
+            color: #0056b3;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            margin: 0; /* Remove default h1 margin */
+            text-align: center; /* Explicitly center the text within h1 */
+            width: 100%; /* Ensure h1 takes full width to center effectively */
+        }
+
+        .total-questions {
+            color: #555;
+            font-size: 1.1em;
+            font-weight: 500;
+            white-space: nowrap; /* Prevent "Total Questions" from wrapping */
+            text-align: center; /* Explicitly center the text */
+            margin-top: 10px; /* Add some space below the main heading */
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Align label and input to the left */
+            width: 100%;
+        }
+
+        .survey-container label {
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+            font-size: 1.15em;
+            flex-shrink: 0;
+            text-align: left; /* Ensure label text itself is left-aligned */
+        }
+
+        .survey-container input[type="text"],
+        .survey-container input[type="email"],
+        .survey-container input[type="number"],
+        .survey-container select,
+        .survey-container textarea {
+            width: 100%; /* Fill the width of .form-group */
+            padding: 14px;
+            border: 1px solid #c0d9ec;
+            border-radius: 8px;
+            font-size: 1.05em;
+            box-sizing: border-box; /* Crucial for width: 100% with padding/border */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: #fcfdff;
+        }
+
+        .survey-container input[type="text"]:focus,
+        .survey-container input[type="email"]:focus,
+        .survey-container input[type="number"]:focus,
+        .survey-container select:focus,
+        .survey-container textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.35);
+            outline: none;
+            background-color: #ffffff;
+        }
+
+        .survey-container button[type="submit"] {
+            background: linear-gradient(180deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.25em;
+            font-weight: bold;
+            margin-top: 35px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+            letter-spacing: 0.05em;
+            display: block; /* Make it a block element to apply margin: auto */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .survey-container button[type="submit"]:hover {
+            background: linear-gradient(180deg, #0056b3, #003f7f);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .survey-container {
+                padding: 20px;
+                max-width: 95%; /* Adjust for smaller screens */
+            }
+            .header-container h1 {
+                font-size: 2em;
+            }
+            .total-questions {
+                font-size: 0.9em;
+            }
+            .survey-container label {
+                font-size: 1em;
+            }
+            .survey-container input,
+            .survey-container select,
+            .survey-container textarea {
+                padding: 10px;
+                font-size: 0.95em;
+            }
+            .survey-container button[type="submit"] {
+                padding: 12px 25px;
+                font-size: 1.1em;
+            }
+            body {
+                padding: 15px; /* Less padding on small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="survey-container">
+        <div class="header-container">
+            <h1>Survey Form</h1>
+            <span class="total-questions">Total Questions: 9</span>
+        </div>
+        <form action="/submit_survey" method="post">
+            <div class="form-group">
+                <label for="first_name">1. First Name:</label>
+                <input type="text" id="first_name" name="first_name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">2. Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="age">3. Age:</label>
+                <input type="number" id="age" name="age" required>
+            </div>
+            <div class="form-group">
+                <label for="gender">4. Gender:</label>
+                <select id="gender" name="gender" required>
+                    <option value="">Select your gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="department">5. Department:</label>
+                <select id="department" name="department" required>
+                    <option value="">Select your department</option>
+                    <option value="BCA">BCA</option>
+                    <option value="BBA">BBA</option>
+                    <option value="BCOM(Hons)">BCOM(Hons)</option>
+                    <option value="Law">Law</option>
+                    <option value="BTECH">BTECH</option>
+                    <option value="MCA">MCA</option>
+                    <option value="MBA">MBA</option>
+                    <option value="MTECH">MTECH</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="most_liked">6. What did you like the most?</label>
+                <textarea id="most_liked" name="most_liked" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="rating">7. How would you rate us?</label>
+                <select id="rating" name="rating" required>
+                    <option value="">Select a rating</option>
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Very Good</option>
+                    <option value="3">3 - Good</option>
+                    <option value="2">2 - Fair</option>
+                    <option value="1">1 - Poor</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="suggestions">8. Suggestions for improvement:</label>
+                <textarea id="suggestions" name="suggestions" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="recommend">9. Would you recommend us?</label>
+                <select id="recommend" name="recommend" required>
+                    <option value="">Select an option</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                    <option value="maybe">Maybe</option>
+                </select>
+            </div>
+            <button type="submit">Submit Survey</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block title %}Survey Results{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    /* New styles for chart containers to control their size and appearance */
+    .chart-container {
+        background-color: #ffffff; /* White background for the chart box */
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Soft shadow */
+        padding: 20px;
+        margin-bottom: 30px; /* Space between chart boxes */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 350px; /* Fixed height for consistent chart size */
+    }
+
+    .chart-container h3 {
+        color: #0056b3; /* Match the H1 color from your style.css */
+        margin-bottom: 15px;
+        font-size: 1.6em;
+        text-align: center;
+    }
+
+    /* Style for the canvas element itself within the container */
+    .chart-container canvas {
+        max-width: 100%; /* Ensure canvas doesn't overflow its container */
+        height: 100%; /* Allow canvas to take full height of container */
+    }
+
+    /* Grid for arranging charts in a responsive layout */
+    .chart-grid-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Responsive columns */
+        gap: 30px; /* Space between grid items */
+        margin-top: 40px;
+        margin-bottom: 40px;
+    }
+
+    /* Styles for the summary boxes (Total Responses, etc.) */
+    .summary-box {
+        background-color: #e0f7fa; /* Light teal background */
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .summary-box h3 {
+        color: #007bff;
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+    .summary-box p {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #0056b3;
+        margin: 0;
+    }
+
+    /* Styling for the word cloud image */
+    .wordcloud-image-container {
+        text-align: center;
+        margin: 40px 0;
+    }
+    .wordcloud-image-container img {
+        max-width: 800px; /* Max width for the word cloud */
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-5" style="color: #0056b3;">Survey Results Dashboard</h1>
+
+    <div class="row">
+        <div class="col-md-4 col-sm-6 mb-4">
+            <div class="summary-box">
+                <h3>Total Responses</h3>
+                <p>{{ total_responses }}</p>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 mb-4">
+            <div class="summary-box">
+                <h3>Positive Recommendations</h3>
+                <p>{{ positive_recommendations }}</p>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 mb-4">
+            <div class="summary-box">
+                <h3>Negative Recommendations</h3>
+                <p>{{ negative_recommendations }}</p>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 mb-4">
+            <div class="summary-box">
+                <h3>"Maybe" Recommendations</h3>
+                <p>{{ maybe_recommendations }}</p>
+            </div>
+        </div>
+        <div class="col-md-8 col-sm-12 mb-4">
+            <div class="summary-box">
+                <h3>Most Common Department</h3>
+                <p>{{ most_common_department }}</p>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <h2 class="text-center mb-4" style="color: #0056b3;">Common Feedback Themes (Word Cloud)</h2>
+    <div class="wordcloud-image-container">
+        <img src="{{ url_for('wordcloud_image') }}" alt="Word Cloud of Suggestions and Likes">
+        <p class="text-muted mt-3">(Refresh page to update word cloud)</p>
+    </div>
+
+    <hr class="my-5">
+
+    <h2 class="text-center mb-4" style="color: #0056b3;">Data Visualizations</h2>
+    <div class="chart-grid-row">
+        <div class="chart-container">
+            <h3>Gender Distribution</h3>
+            <canvas id="genderChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>Department Distribution</h3>
+            <canvas id="departmentChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>Rating Distribution</h3>
+            <canvas id="ratingChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>Recommendation Breakdown</h3>
+            <canvas id="recommendationChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>Age Distribution</h3>
+            <canvas id="ageChart"></canvas>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <h2 class="text-center mb-4" style="color: #0056b3;">All Survey Responses</h2>
+    <div class="table-responsive mb-5">
+        <table class="table table-striped table-hover table-bordered">
+            <thead class="bg-primary text-white">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Department</th>
+                    <th>Likes</th>
+                    <th>Rating</th>
+                    <th>Suggestions</th>
+                    <th>Recommendation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for response in responses %}
+                <tr>
+                    <td>{{ response.id }}</td>
+                    <td>{{ response.name }}</td>
+                    <td>{{ response.email }}</td>
+                    <td>{{ response.age }}</td>
+                    <td>{{ response.gender }}</td>
+                    <td>{{ response.department }}</td>
+                    <td>{{ response.likes }}</td>
+                    <td>{{ response.rating }}</td>
+                    <td>{{ response.suggestions }}</td>
+                    <td>{{ response.recommendation }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" class="text-center text-muted">No survey responses yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Data passed from Flask
+    const genderData = {{ gender_data | tojson }};
+    const departmentData = {{ department_data | tojson }};
+    const ratingData = {{ rating_data | tojson }};
+    const recommendationData = {{ recommendation_data | tojson }};
+    const ages = {{ ages | tojson }}; // Raw age data
+
+    // Helper function to generate an array of distinct colors for charts
+    function generateChartColors(num) {
+        const colors = [
+            'rgba(0, 123, 255, 0.7)',  // Blue
+            'rgba(255, 193, 7, 0.7)',  // Yellow
+            'rgba(40, 167, 69, 0.7)',  // Green
+            'rgba(220, 53, 69, 0.7)',  // Red
+            'rgba(108, 117, 125, 0.7)',// Gray
+            'rgba(23, 162, 184, 0.7)', // Teal
+            'rgba(111, 66, 193, 0.7)', // Purple
+            'rgba(253, 126, 20, 0.7)', // Orange
+            'rgba(200, 20, 120, 0.7)', // Pinkish
+            'rgba(100, 180, 50, 0.7)'  // Light Green
+        ];
+        let result = [];
+        for (let i = 0; i < num; i++) {
+            result.push(colors[i % colors.length]);
+        }
+        return result;
+    }
+
+    // Helper function for border colors (slightly darker than fill)
+    function generateChartBorderColors(num) {
+        const borderColors = [
+            'rgba(0, 123, 255, 1)',
+            'rgba(255, 193, 7, 1)',
+            'rgba(40, 167, 69, 1)',
+            'rgba(220, 53, 69, 1)',
+            'rgba(108, 117, 125, 1)',
+            'rgba(23, 162, 184, 1)',
+            'rgba(111, 66, 193, 1)',
+            'rgba(253, 126, 20, 1)',
+            'rgba(200, 20, 120, 1)',
+            'rgba(100, 180, 50, 1)'
+        ];
+        let result = [];
+        for (let i = 0; i < num; i++) {
+            result.push(borderColors[i % borderColors.length]);
+        }
+        return result;
+    }
+
+    // Common Chart Options for responsiveness and general look
+    const commonChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false, // Important for controlling size with CSS
+        plugins: {
+            legend: {
+                position: 'bottom', // Legend at the bottom for all charts
+                labels: {
+                    font: {
+                        size: 14 // Adjust legend font size
+                    }
+                }
+            },
+            tooltip: {
+                // Improve tooltip appearance
+                bodyFont: {
+                    size: 14
+                },
+                titleFont: {
+                    size: 16,
+                    weight: 'bold'
+                },
+                padding: 10,
+                boxPadding: 5
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    precision: 0 // Ensure integer ticks for counts
+                },
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)' // Light grid lines
+                }
+            },
+            x: {
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            }
+        }
+    };
+
+
+    // Chart 1: Gender Distribution (Bar Chart)
+    const genderCtx = document.getElementById('genderChart').getContext('2d');
+    new Chart(genderCtx, {
+        type: 'bar',
+        data: {
+            labels: genderData.map(item => item.label),
+            datasets: [{
+                label: 'Count',
+                data: genderData.map(item => item.value),
+                backgroundColor: generateChartColors(genderData.length),
+                borderColor: generateChartBorderColors(genderData.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...commonChartOptions, // Spread common options
+            scales: {
+                y: {
+                    ...commonChartOptions.scales.y,
+                    title: {
+                        display: true,
+                        text: 'Number of Respondents'
+                    }
+                },
+                x: {
+                    ...commonChartOptions.scales.x,
+                    title: {
+                        display: true,
+                        text: 'Gender'
+                    }
+                }
+            }
+        }
+    });
+
+    // Chart 2: Department Distribution (Bar Chart)
+    const departmentCtx = document.getElementById('departmentChart').getContext('2d');
+    new Chart(departmentCtx, {
+        type: 'bar',
+        data: {
+            labels: departmentData.map(item => item.label),
+            datasets: [{
+                label: 'Count',
+                data: departmentData.map(item => item.value),
+                backgroundColor: generateChartColors(departmentData.length),
+                borderColor: generateChartBorderColors(departmentData.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...commonChartOptions,
+            scales: {
+                y: {
+                    ...commonChartOptions.scales.y,
+                    title: {
+                        display: true,
+                        text: 'Number of Respondents'
+                    }
+                },
+                x: {
+                    ...commonChartOptions.scales.x,
+                    title: {
+                        display: true,
+                        text: 'Department'
+                    }
+                }
+            }
+        }
+    });
+
+    // Chart 3: Rating Distribution (Bar Chart)
+    const ratingCtx = document.getElementById('ratingChart').getContext('2d');
+    new Chart(ratingCtx, {
+        type: 'bar',
+        data: {
+            labels: ratingData.map(item => item.label),
+            datasets: [{
+                label: 'Count',
+                data: ratingData.map(item => item.value),
+                backgroundColor: generateChartColors(ratingData.length),
+                borderColor: generateChartBorderColors(ratingData.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...commonChartOptions,
+            scales: {
+                y: {
+                    ...commonChartOptions.scales.y,
+                    title: {
+                        display: true,
+                        text: 'Number of Ratings'
+                    }
+                },
+                x: {
+                    ...commonChartOptions.scales.x,
+                    title: {
+                        display: true,
+                        text: 'Rating (1-5)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Chart 4: Recommendation Breakdown (Doughnut Chart)
+    const recommendationCtx = document.getElementById('recommendationChart').getContext('2d');
+    // Specific colors for recommendation breakdown (Yes, No, Maybe)
+    const recommendationColors = ['rgba(40, 167, 69, 0.7)', 'rgba(220, 53, 69, 0.7)', 'rgba(255, 193, 7, 0.7)'];
+    const recommendationBorderColors = ['rgba(40, 167, 69, 1)', 'rgba(220, 53, 69, 1)', 'rgba(255, 193, 7, 1)'];
+
+    new Chart(recommendationCtx, {
+        type: 'doughnut',
+        data: {
+            labels: recommendationData.map(item => item.label),
+            datasets: [{
+                data: recommendationData.map(item => item.value),
+                backgroundColor: recommendationColors,
+                borderColor: recommendationBorderColors,
+                borderWidth: 1,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            ...commonChartOptions,
+            scales: { // Doughnut charts typically don't need scales
+                y: { display: false },
+                x: { display: false }
+            }
+        }
+    });
+
+    // Chart 5: Age Distribution (Histogram/Bar Chart for Bins)
+    function createAgeBins(agesArray) {
+        const bins = {
+            '0-18': 0,
+            '19-25': 0,
+            '26-35': 0,
+            '36-50': 0,
+            '51+': 0
+        };
+
+        agesArray.forEach(age => {
+            if (age !== null && age !== undefined) { // Handle potential null/undefined ages
+                if (age >= 0 && age <= 18) {
+                    bins['0-18']++;
+                } else if (age >= 19 && age <= 25) {
+                    bins['19-25']++;
+                } else if (age >= 26 && age <= 35) {
+                    bins['26-35']++;
+                } else if (age >= 36 && age <= 50) {
+                    bins['36-50']++;
+                } else if (age >= 51) {
+                    bins['51+']++;
+                }
+            }
+        });
+        return bins;
+    }
+
+    const ageBins = createAgeBins(ages);
+    const ageLabels = Object.keys(ageBins);
+    const ageCounts = Object.values(ageBins);
+
+    const ageCtx = document.getElementById('ageChart').getContext('2d');
+    new Chart(ageCtx, {
+        type: 'bar',
+        data: {
+            labels: ageLabels,
+            datasets: [{
+                label: 'Count',
+                data: ageCounts,
+                backgroundColor: generateChartColors(ageLabels.length),
+                borderColor: generateChartBorderColors(ageLabels.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...commonChartOptions,
+            scales: {
+                y: {
+                    ...commonChartOptions.scales.y,
+                    title: {
+                        display: true,
+                        text: 'Number of Respondents'
+                    }
+                },
+                x: {
+                    ...commonChartOptions.scales.x,
+                    title: {
+                        display: true,
+                        text: 'Age Group'
+                    }
+                }
+            }
+        }
+    });
+
+</script>
+{% endblock %}

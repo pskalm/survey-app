@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You!</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            /* Same background as survey form */
+            background-image: url('https://media.istockphoto.com/id/1064746326/photo/survey-with-businessman.jpg?s=612x612&w=0&k=20&c=ONE_Wq4FgTxRE7131inWLFKAWj40-WKPncsPpfpWMjI=');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: rgba(255, 255, 255, 0.8);
+            background-blend-mode: overlay;
+            background-color: #eef2f6;
+
+            /* Central Alignment for the content */
+            display: flex;
+            justify-content: center; /* Horizontally center */
+            align-items: center;     /* Vertically center */
+            min-height: 100vh;       /* Full viewport height */
+            box-sizing: border-box;
+            padding: 20px;           /* Padding around the content */
+            overflow-y: auto;        /* Allow scrolling if needed */
+            text-align: center;      /* Center text for overall page (for simple pages) */
+        }
+
+        .thank-you-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 40px 30px; /* More vertical padding */
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 500px; /* A bit narrower than the survey form */
+            text-align: center; /* Ensure content inside is centered */
+            position: relative;
+            z-index: 2;
+        }
+
+        .thank-you-container h1 {
+            color: #0056b3;
+            font-size: 2.8em; /* Larger heading */
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .thank-you-container p {
+            font-size: 1.3em; /* Larger paragraph text */
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .thank-you-container a {
+            display: inline-block; /* Allows padding and margin */
+            background: linear-gradient(180deg, #007bff, #0056b3);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none; /* Remove underline */
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+            margin-top: 20px;
+        }
+
+        .thank-you-container a:hover {
+            background: linear-gradient(180deg, #0056b3, #003f7f);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        /* Emojis styling */
+        .emoji {
+            font-size: 1.2em; /* Make emojis slightly larger */
+            vertical-align: middle; /* Align emojis with text */
+            margin: 0 5px; /* Space around emojis */
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .thank-you-container {
+                padding: 30px 20px;
+                max-width: 90%;
+            }
+            .thank-you-container h1 {
+                font-size: 2.2em;
+            }
+            .thank-you-container p {
+                font-size: 1.1em;
+            }
+            .thank-you-container a {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="thank-you-container">
+        <h1>Thank you for your feedback! <span class="emoji">🎉</span></h1>
+        <p>Your response has been submitted! <span class="emoji">✅</span></p>
+        <a href="/">Back to Home Page😊🏠</a>
+    </div>
+</body>
+</html>

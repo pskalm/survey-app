@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Survey Analytics</title>
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Dashboard Section Container Styling */
+        .dashboard-section {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-align: center; /* Centering the main heading */
+            color: #d1122bff; /* A shade of blue for the heading */
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .dashboard-section p { /* Targeting the specific subheading */
+            margin-bottom: 10px;
+            color: #555;
+            text-align: center; /* Centering the subheading */
+            color: #920ea4ff; /* A subtle grey for the subheading */
+        }
+
+
+        /* KPI Grid for Key Performance Indicators */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Individual KPI Card Styling */
+        .kpi-card {
+            background-color: #e8f0fe;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #cce0ff;
+            display: flex; /* Use flexbox for layout inside KPI card */
+            flex-direction: column; /* Stack content vertically */
+            align-items: center; /* Center items horizontally */
+            justify-content: space-between; /* Space out content vertically */
+            min-height: 150px; /* Give some minimum height for cards */
+        }
+
+        .kpi-card h3 {
+            margin-top: 0;
+            margin-bottom: 5px; /* Reduced margin */
+            color: #4a67aa;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .kpi-card .kpi-value-and-trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px; /* Space between value and chart */
+            width: 100%; /* Ensure it takes full width for centering */
+        }
+
+        .kpi-card .kpi-value-and-trend p {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2a5298;
+            margin: 0; /* Remove default paragraph margin */
+            line-height: 1;
+        }
+
+        .kpi-card .trend-indicator {
+            font-size: 1.5em; /* Size for emojis */
+            margin-left: 10px;
+        }
+
+        .kpi-card .trend-indicator.positive { color: #28a745; } /* Green */
+        .kpi-card .trend-indicator.negative { color: #dc3545; } /* Red */
+        .kpi-card .trend-indicator.neutral { color: #6c757d; } /* Grey */
+
+
+        /* Mini Chart Styling */
+        .kpi-mini-chart {
+            width: 100% !important; /* Full width of its container */
+            max-width: 150px; /* Max width for consistency */
+            height: 60px !important; /* Fixed height for mini-chart */
+            margin-top: 5px; /* Space above chart */
+        }
+
+
+        /* Chart Grid for Visualizations (Main Charts) */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Individual Chart Container Styling (Main Charts) */
+        .chart-container {
+            background-color: #fcfcfc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            position: relative;
+            aspect-ratio: 1 / 1;
+            min-height: 250px;
+            max-height: 400px;
+            box-sizing: border-box;
+        }
+
+        .chart-container h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #333;
+            font-size: 1.1em;
+            width: 100%;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .chart-container canvas {
+            max-width: 100% !important;
+            max-height: calc(100% - 40px) !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+            margin: auto;
+        }
+
+        /* Adjustments for pie/doughnut chart legends */
+        .chart-container .chartjs-render-monitor {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Word Cloud Container Styling */
+        .word-cloud-container {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fcfcfc;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .word-cloud-container h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .word-cloud-container img {
+            max-width: 90%;
+            height: auto;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .word-cloud-container p {
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .kpi-grid, .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-section">
+        <h1>Live Survey Analytics Dashboard</h1>
+        <p>This dashboard updates automatically with the latest data in real-time.</p>
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Key Performance Indicators</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Total Live Responses</h3>
+                <div class="kpi-value-and-trend">
+                    <p id="totalResponsesLive">Loading...</p>
+                    <span id="totalResponsesTrendIcon" class="trend-indicator"></span>
+                </div>
+                <canvas id="totalResponsesMiniChart" class="kpi-mini-chart"></canvas>
+            </div>
+            <div class="kpi-card">
+                <h3>Avg. Rating (Live)</h3>
+                <div class="kpi-value-and-trend">
+                    <p id="avgRatingLive">N/A</p>
+                    <span id="avgRatingTrendIcon" class="trend-indicator"></span>
+                </div>
+                <canvas id="avgRatingMiniChart" class="kpi-mini-chart"></canvas>
+            </div>
+            <div class="kpi-card">
+                <h3>Positive Recommendations. (Live)</h3>
+                <div class="kpi-value-and-trend">
+                    <p id="positiveRecommendationsLive">N/A</p>
+                    <span id="positiveRecommendationsTrendIcon" class="trend-indicator"></span>
+                </div>
+                   </div>
+            <div class="kpi-card">
+                <h3>Negative Recommendations. (Live)</h3>
+                <div class="kpi-value-and-trend">
+                    <p id="negativeRecommendationsLive">N/A</p>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Live Data Visualizations</h2>
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h3>Live Recommendation Breakdown</h3>
+                <canvas id="liveRecommendationChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Live Gender Distribution</h3>
+                <canvas id="liveGenderChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Live Department Distribution</h3>
+                <canvas id="liveDepartmentChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Live Rating Distribution</h3>
+                <canvas id="liveRatingChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Live Age Distribution</h3>
+                <canvas id="liveAgeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-section word-cloud-container">
+        <h2>Student Voice Cloud</h2>
+        <img id="liveWordCloudImage" src="{{ url_for('wordcloud_image') }}?" alt="Live Word Cloud of Suggestions and Likes">
+        <p>Real Time Insights</p>
+    </div>
+
+
+    <script>
+        // Global chart instances to update them later
+        let liveRecommendationChart;
+        let liveGenderChart;
+        let liveDepartmentChart;
+        let liveRatingChart;
+        let liveAgeChart;
+
+        // New mini-chart instances
+        let totalResponsesMiniChart;
+        let avgRatingMiniChart;
+
+
+        // Function to create or update a chart
+        function createOrUpdateChart(chartInstance, canvasId, type, labels, data, colors, options) {
+            const canvasElement = document.getElementById(canvasId);
+            if (!canvasElement) {
+                console.warn(`Canvas element not found for ID: ${canvasId}`);
+                return null;
+            }
+            const ctx = canvasElement.getContext('2d');
+            if (!ctx) {
+                console.error(`2D context not available for canvas ID: ${canvasId}`);
+                return null;
+            }
+
+            // Ensure data arrays are not empty, otherwise Chart.js might have issues
+            const effectiveLabels = labels && labels.length > 0 ? labels : ['No Data'];
+            const effectiveData = data && data.length > 0 ? data : [0]; // Use 0 for line/bar charts if no data
+            const effectiveColors = colors && colors.length > 0 ? colors : ['#cccccc']; // Default grey for no data
+
+            if (chartInstance) {
+                // Update existing chart data
+                chartInstance.data.labels = effectiveLabels;
+                chartInstance.data.datasets[0].data = effectiveData;
+                if (chartInstance.data.datasets[0].backgroundColor) { // Only update if background colors are dynamic
+                    chartInstance.data.datasets[0].backgroundColor = effectiveColors;
+                }
+                if (chartInstance.data.datasets[0].borderColor) { // For line charts
+                    chartInstance.data.datasets[0].borderColor = effectiveColors[0];
+                }
+                chartInstance.update();
+            } else {
+                // Create new chart instance
+                chartInstance = new Chart(ctx, {
+                    type: type,
+                    data: {
+                        labels: effectiveLabels,
+                        datasets: [{
+                            data: effectiveData,
+                            backgroundColor: (type === 'line' || type === 'bar') ? effectiveColors[0] + '40' : effectiveColors, // Light fill for line, solid for bar/pie
+                            borderColor: (type === 'line' || type === 'bar') ? effectiveColors[0] : effectiveColors[0], // Solid line for line, border for bars
+                            borderWidth: 1,
+                            fill: (type === 'line') ? true : false, // Fill area under line
+                            pointRadius: (type === 'line') ? 3 : 0, // Show points for line charts
+                            tension: (type === 'line') ? 0.4 : 0, // Smooth line
+                        }]
+                    },
+                    options: options
+                });
+            }
+            return chartInstance;
+        }
+
+        function setTrendIcon(elementId, status) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            element.className = 'trend-indicator'; // Reset classes
+            if (status === 'positive') {
+                element.innerHTML = '&#x1F4C8;'; // Chart increasing emoji
+                element.classList.add('positive');
+            } else if (status === 'negative') {
+                element.innerHTML = '&#x1F4C9;'; // Chart decreasing emoji
+                element.classList.add('negative');
+            } else {
+                element.innerHTML = '&#x1F535;'; // Blue circle for neutral
+                element.classList.add('neutral');
+            }
+        }
+
+        function updateLiveDashboard() {
+            console.log('Fetching live data...');
+            fetch('/api/live_data')
+                .then(response => {
+                    console.log('Received response from /api/live_data', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Live data received:', data);
+
+                    // --- Update KPIs ---
+                    document.getElementById('totalResponsesLive').innerText = data.totalResponses || 0;
+
+                    let totalRatingSum = 0;
+                    let totalRatedResponses = 0;
+                    if (data.ratingDistribution && data.ratingDistribution.length > 0) {
+                        data.ratingDistribution.forEach(item => {
+                            const rating = parseInt(item.label);
+                            const count = item.value;
+                            if (!isNaN(rating) && rating !== null) {
+                                totalRatingSum += rating * count;
+                                totalRatedResponses += count;
+                            }
+                        });
+                    }
+                    const avgRating = totalRatedResponses > 0 ? (totalRatingSum / totalRatedResponses).toFixed(1) : 'N/A';
+                    document.getElementById('avgRatingLive').innerText = avgRating;
+
+                    const positiveRecData = data.recommendationBreakdown ? data.recommendationBreakdown.find(item => item.label && item.label.toLowerCase() === 'yes') : null;
+                    const negativeRecData = data.recommendationBreakdown ? data.recommendationBreakdown.find(item => item.label && item.label.toLowerCase() === 'no') : null;
+
+                    document.getElementById('positiveRecommendationsLive').innerText = positiveRecData ? positiveRecData.value : 0;
+                    document.getElementById('negativeRecommendationsLive').innerText = negativeRecData ? negativeRecData.value : 0;
+
+                    // --- Update KPI Trend Icons ---
+                    setTrendIcon('totalResponsesTrendIcon', data.totalResponsesTrend?.status);
+                    setTrendIcon('avgRatingTrendIcon', data.avgRatingTrend?.status);
+                    setTrendIcon('positiveRecommendationsTrendIcon', data.positiveRecommendationsTrendStatus);
+
+
+                    // --- Update Mini Charts in KPIs ---
+                    // Total Responses Mini Chart
+                    const totalRespTrendLabels = data.totalResponsesTrend?.data.map(item => item.label) || [];
+                    const totalRespTrendValues = data.totalResponsesTrend?.data.map(item => item.value) || [];
+                    totalResponsesMiniChart = createOrUpdateChart(
+                        totalResponsesMiniChart, 'totalResponsesMiniChart', 'line',
+                        totalRespTrendLabels, totalRespTrendValues, ['#2a5298'], // Blue color for line
+                        {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                title: { display: false }
+                            },
+                            scales: {
+                                x: { display: false }, // Hide x-axis
+                                y: { display: false, beginAtZero: true } // Hide y-axis
+                            },
+                            elements: {
+                                line: { borderWidth: 1.5 },
+                                point: { radius: 2, hoverRadius: 4 }
+                            }
+                        }
+                    );
+
+                    // Avg. Rating Mini Chart
+                    const avgRatingTrendLabels = data.avgRatingTrend?.data.map(item => item.label) || [];
+                    const avgRatingTrendValues = data.avgRatingTrend?.data.map(item => item.value) || [];
+                    avgRatingMiniChart = createOrUpdateChart(
+                        avgRatingMiniChart, 'avgRatingMiniChart', 'line',
+                        avgRatingTrendLabels, avgRatingTrendValues, ['#4a67aa'], // Different shade of blue/purple
+                        {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                title: { display: false }
+                            },
+                            scales: {
+                                x: { display: false }, // Hide x-axis
+                                y: { display: false, beginAtZero: true } // Hide y-axis
+                            },
+                            elements: {
+                                line: { borderWidth: 1.5 },
+                                point: { radius: 2, hoverRadius: 4 }
+                            }
+                        }
+                    );
+
+
+                    // --- Update Main Charts (as before) ---
+                    const recLabels = data.recommendationBreakdown?.map(item => item.label) || [];
+                    const recValues = data.recommendationBreakdown?.map(item => item.value) || [];
+                    const recColors = ['#28a745', '#dc3545', '#ffc107', '#6c757d'];
+                    liveRecommendationChart = createOrUpdateChart(
+                        liveRecommendationChart, 'liveRecommendationChart', 'pie',
+                        recLabels, recValues, recColors,
+                        {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'right', align: 'center', labels: { boxWidth: 15, padding: 8 } },
+                                title: { display: false }
+                            }
+                        }
+                    );
+
+                    const genderLabels = data.genderDistribution?.map(item => item.label) || [];
+                    const genderValues = data.genderDistribution?.map(item => item.value) || [];
+                    const genderColors = ['#6a5acd', '#ff6384', '#cccccc'];
+                    liveGenderChart = createOrUpdateChart(
+                        liveGenderChart, 'liveGenderChart', 'doughnut',
+                        genderLabels, genderValues, genderColors,
+                        {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'right', align: 'center', labels: { boxWidth: 15, padding: 8 } },
+                                title: { display: false }
+                            }
+                        }
+                    );
+
+                    const deptLabels = data.departmentDistribution?.map(item => item.label) || [];
+                    const deptValues = data.departmentDistribution?.map(item => item.value) || [];
+                    const deptColors = deptLabels.map(() => '#4bc0c0');
+                    liveDepartmentChart = createOrUpdateChart(
+                        liveDepartmentChart, 'liveDepartmentChart', 'bar',
+                        deptLabels, deptValues, deptColors,
+                        {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                title: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, title: { display: true, text: 'Count' } },
+                                x: { title: { display: true, text: 'Department' } }
+                            }
+                        }
+                    );
+
+                    const ratingLabels = data.ratingDistribution?.map(item => item.label) || [];
+                    const ratingValues = data.ratingDistribution?.map(item => item.value) || [];
+                    const ratingColors = ratingLabels.map(() => '#ffcd56');
+                    liveRatingChart = createOrUpdateChart(
+                        liveRatingChart, 'liveRatingChart', 'bar',
+                        ratingLabels, ratingValues, ratingColors,
+                        {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                title: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, title: { display: true, text: 'Count' } },
+                                x: { title: { display: true, text: 'Rating (1-5)' } }
+                            }
+                        }
+                    );
+
+                    const ageLabels = data.ageDistribution?.map(item => item.label) || [];
+                    const ageValues = data.ageDistribution?.map(item => item.value) || [];
+                    const ageColors = ageLabels.map(() => '#36a2eb');
+                    liveAgeChart = createOrUpdateChart(
+                        liveAgeChart, 'liveAgeChart', 'bar',
+                        ageLabels, ageValues, ageColors,
+                        {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                title: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, title: { display: true, text: 'Number of Respondents' } },
+                                x: { title: { display: true, text: 'Age Group' } }
+                            }
+                        }
+                    );
+
+                    // --- Update Word Cloud Image ---
+                    const liveWordCloudImage = document.getElementById('liveWordCloudImage');
+                    liveWordCloudImage.src = "{{ url_for('wordcloud_image') }}?" + new Date().getTime();
+
+                })
+                .catch(error => {
+                    console.error('Error fetching live data or rendering charts:', error);
+                    document.getElementById('totalResponsesLive').innerText = 'Error!';
+                    document.getElementById('avgRatingLive').innerText = 'Error!';
+                    document.getElementById('positiveRecommendationsLive').innerText = 'Error!';
+                    document.getElementById('negativeRecommendationsLive').innerText = 'Error!';
+                    setTrendIcon('totalResponsesTrendIcon', 'neutral'); // Set neutral on error
+                    setTrendIcon('avgRatingTrendIcon', 'neutral');
+                    setTrendIcon('positiveRecommendationsTrendIcon', 'neutral');
+                });
+        }
+
+        // Call update function immediately on page load
+        updateLiveDashboard();
+
+        // Set interval to refresh data every 5 seconds (adjust as needed)
+        setInterval(updateLiveDashboard, 5000); // 5000 milliseconds = 5 seconds
+    </script>
+</body>
+</html>

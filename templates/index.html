@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Survey App</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            /* Background image from the screenshot */
+            background-image: url('https://media.istockphoto.com/id/1064746326/photo/survey-with-businessman.jpg?s=612x612&w=0&k=20&c=ONE_Wq4FgTxRE7131inWLFKAWj40-WKPncsPpfpWMjI='); /* Placeholder, adjust if you have a local image */
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: rgba(255, 255, 255, 0.8); /* Overlay for readability */
+            background-blend-mode: overlay; /* Blends background color with image */
+            background-color: #eef2f6; /* Light fallback color */
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .main-container {
+            background-color: rgba(255, 255, 255, 0.95); /* Slightly transparent white background */
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 100%;
+            max-width: 600px; /* Max width for the content box */
+            transform: translateY(-20px); /* Slightly move up for better visual balance */
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-40px); }
+            to { opacity: 1; transform: translateY(-20px); }
+        }
+
+        .main-container h1 {
+            color: #0056b3;
+            font-size: 3.2em;
+            margin-bottom: 25px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .btn-group-custom {
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            justify-content: center;
+            gap: 15px; /* Space between buttons */
+            margin-top: 30px;
+        }
+
+        .btn-custom {
+            flex: 1 1 calc(50% - 30px); /* Two buttons per row, adjusted for gap */
+            max-width: 250px; /* Max width for individual buttons */
+            padding: 15px 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white; /* Default color for all buttons */
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            text-align: center; /* Center text within buttons */
+        }
+
+        /* Specific button colors and gradients */
+        .btn-primary-custom {
+            background: linear-gradient(180deg, #007bff, #0056b3);
+        }
+        .btn-primary-custom:hover {
+            background: linear-gradient(180deg, #88b5e5, #83b1de);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-success-custom { /* Used for Upload Manually */
+            background: linear-gradient(180deg, #28a745, #1e7e34);
+        }
+        .btn-success-custom:hover {
+            background: linear-gradient(180deg, #63e782, #4feb73);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-info-custom { /* Used for View Results */
+            background: linear-gradient(180deg, #17a2b8, #a7e0e8);
+        }
+        .btn-info-custom:hover {
+            background: linear-gradient(180deg, #87e7f5, #60d7ec);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(23, 162, 184, 0.4);
+        }
+
+        .btn-warning-custom { /* Used for Live Analytics */
+            background: linear-gradient(180deg, #cd5e96, #df8dae);
+            color: #333; /* Darker text for warning button */
+        }
+        .btn-warning-custom:hover {
+            background: linear-gradient(180deg, #cd5e96, #df8dae);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4);
+        }
+
+        /* Responsive adjustments for buttons */
+        @media (max-width: 768px) {
+            .btn-custom {
+                flex: 1 1 100%; /* Stack buttons on small screens */
+                max-width: none;
+            }
+            .main-container {
+                padding: 30px 25px;
+            }
+            .main-container h1 {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h1>Welcome to Survey App</h1>
+        <div class="btn-group-custom">
+            <a href="{{ url_for('take_survey') }}" class="btn-custom btn-primary-custom">Take Survey</a>
+            <a href="{{ url_for('upload_manual') }}" class="btn-custom btn-success-custom">Upload Manually</a>
+            <a href="{{ url_for('view_results') }}" class="btn-custom btn-info-custom">View Results</a>
+            <a href="{{ url_for('live_analytics') }}" class="btn-custom btn-warning-custom">Live Analytics</a>
+        </div>
+    </div>
+</body>
+</html>
