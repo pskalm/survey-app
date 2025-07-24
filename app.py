@@ -6,16 +6,22 @@ import sqlite3
 from collections import Counter
 from datetime import datetime, timedelta
 import os
-from flask import g 
+from flask import g
 from flask import send_file
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from werkzeug.utils import secure_filename
 import io
 import base64
+from flask_mail import Mail, Message
 
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, send_file
+
+# --- NEW: Import and load dotenv ---
+from dotenv import load_dotenv
+load_dotenv() # This line loads variables from the .env file into os.environ
+# --- End NEW ---
 
 # --- Word Cloud Imports ---
 from wordcloud import WordCloud
@@ -28,6 +34,7 @@ from supabase import create_client, Client
 # --- HARDCODED VALUES (NOT RECOMMENDED FOR PRODUCTION - REPLACE WITH YOUR ACTUAL KEYS) ---
 # You MUST replace these with your actual keys for the app to work.
 # IMPORTANT: Change 'your_hardcoded_flask_secret_key_here_for_testing' to a strong, unique key.
+# For a production deployment, these should also come from environment variables.
 FLASK_SECRET_KEY_HARDCODED = '3100ecda3dfe52805aaf2d8ad2474cd2'
 SUPABASE_URL_HARDCODED = "https://qbpbonlmftcfjkmqzhhf.supabase.co"
 SUPABASE_KEY_HARDCODED = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFicGJvbmxtZnRjZmprbXF6aGhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MzUxODcsImV4cCI6MjA2ODkxMTE4N30.aWDZhhwQ56uDb8SnMr_t4sTb0yPT4hHpGwBsmsETFhg"
@@ -37,6 +44,25 @@ SUPABASE_KEY_HARDCODED = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY_HARDCODED # Using the hardcoded key
 
+# --- Flask-Mail Configuration (Now prioritizes .env variables) ---
+# os.environ.get() will first look for the variable in the environment
+# (which includes variables loaded from .env by load_dotenv()),
+# then fall back to the provided default if not found.
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() in ('true', '1', 't')
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() in ('true', '1', 't')
+
+# These will now get their values from your .env file if set there
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'gshubhangi097@gmail.com')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'your_hardcoded_app_password_for_local_fallback')
+# IMPORTANT: 'your_hardcoded_app_password_for_local_fallback' is just a placeholder here.
+# For local testing using .env, the value from .env will override this.
+# For actual deployment on Render, ensure MAIL_PASSWORD is set as an environment variable on Render.
+
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', app.config['MAIL_USERNAME'])
+
+mail = Mail(app)
 
 # --- SUPABASE CLIENT INITIALIZATION (using hardcoded values) ---
 try:
@@ -84,7 +110,7 @@ def init_db():
                 rating INTEGER,
                 suggestions TEXT,
                 recommendation TEXT,
-                image_url TEXT,              -- Column for image URL (from Supabase Storage)
+                image_url TEXT,            -- Column for image URL (from Supabase Storage)
                 image_analytics_results TEXT, -- Column for analytics results (e.g., JSON string)
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
             )
@@ -116,7 +142,7 @@ def generate_word_cloud(text_list, filename="wordcloud.png"):
     wordcloud.to_file(filepath)
     return filepath
 
-# --- FLASK ROUTES ---
+# --- FLASK ROUTES (UNCHANGED LOGIC) ---
 
 @app.route('/')
 def index():
@@ -161,6 +187,21 @@ def submit_survey():
             )
             conn.commit()
             flash('Survey response submitted successfully!', 'success')
+
+            # --- Send Confirmation Email (Inside the successful submission block) ---
+            try:
+                msg = Message(
+                    subject="Thank You for Your Survey Submission!",
+                    recipients=[email], # Send to the user's email
+                    html=render_template('confirmation_email.html', name=first_name) # Use an HTML template
+                )
+                mail.send(msg)
+                flash('A confirmation email has been sent.', 'info')
+            except Exception as e:
+                flash(f'Failed to send confirmation email. Error: {e}', 'warning') # Added specific error
+                print(f'ERROR SENDING EMAIL: {e}') # <--- This will now print the specific error
+            # --- End Send Confirmation Email ---
+
         except sqlite3.IntegrityError:
             flash('An entry with this email already exists. Please use a different email or update.', 'danger')
             conn.rollback()
@@ -180,11 +221,31 @@ def thank_you_page():
     """Renders the styled thank you page after survey submission."""
     return render_template('thank_you.html') # This is the HTML file that will contain the "Back to Home Page" link
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    """Serves uploaded files (e.g., images) from the UPLOAD_FOLDER."""
-    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+@app.route('/test_email')
+def test_email():
+    recipient_email = app.config['MAIL_USERNAME']
+    print(f"\n--- DEBUGGING EMAIL ---")
+    print(f"DEBUG: MAIL_USERNAME (from app.config): {app.config['MAIL_USERNAME']}")
+    print(f"DEBUG: MAIL_PASSWORD (first 4 chars from app.config): {app.config['MAIL_PASSWORD'][:4]}****")
+    print(f"DEBUG: MAIL_SERVER: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
+    print(f"DEBUG: MAIL_USE_TLS: {app.config['MAIL_USE_TLS']}")
+    print(f"DEBUG: MAIL_USE_SSL: {app.config['MAIL_USE_SSL']}")
+    print(f"DEBUG: MAIL_DEFAULT_SENDER: {app.config['MAIL_DEFAULT_SENDER']}")
+    print(f"DEBUG: Attempting to send test email to: {recipient_email}")
+    print(f"-----------------------\n")
 
+    try:
+        msg = Message(
+            subject="Test Email from Flask App",
+            recipients=[recipient_email],
+            body="This is a test email sent from your Flask application. If you received this, email configuration is working!"
+        )
+        mail.send(msg)
+        flash(f'Test email sent successfully to {recipient_email}!', 'success')
+    except Exception as e:
+        flash(f'Failed to send test email: {e}', 'danger')
+        print(f"ERROR SENDING TEST EMAIL: {e}")
+    return redirect(url_for('index'))
 
 @app.route('/results')
 def view_results():
@@ -221,7 +282,7 @@ def view_results():
             response_dict = dict(row)
             # Ensure timestamp is string for JSON
             if 'timestamp' in response_dict and isinstance(response_dict['timestamp'], datetime):
-                 response_dict['timestamp'] = response_dict['timestamp'].isoformat()
+                response_dict['timestamp'] = response_dict['timestamp'].isoformat()
             combined_responses.append(response_dict)
     except Exception as e:
         print(f"Error fetching data from SQLite: {e}")
@@ -293,7 +354,7 @@ def view_results():
     gender_data = [{'label': k, 'value': v} for k, v in Counter(all_genders).items()]
     department_data = [{'label': k, 'value': v} for k, v in Counter(all_departments).items()]
     rating_data = [{'label': str(k), 'value': v} for k, v in Counter(all_ratings).items()]
-    
+
     # Ensure recommendation order: Yes, No, Maybe (explicitly count them)
     positive_recommendations_count = Counter(all_recommendations).get('yes', 0)
     negative_recommendations_count = Counter(all_recommendations).get('no', 0)
@@ -321,7 +382,7 @@ def view_results():
                            rating_data=rating_data,
                            recommendation_data=recommendation_data,
                            ages=all_ages, # This is the list of ages from filtered data
-                           
+
                            # Pass filter options back to the template to pre-select dropdowns
                            selected_gender=selected_gender,
                            selected_department=selected_department,
@@ -330,7 +391,7 @@ def view_results():
                            unique_genders=unique_genders,
                            unique_departments=unique_departments
                           )
-    
+
 @app.route('/live_analytics')
 def live_analytics():
     # You might pass initial data or just render the template
@@ -533,47 +594,23 @@ def get_live_data():
     finally:
         if conn:
             conn.close()
-            
-            
+
+
 @app.route('/wordcloud_image')
 def wordcloud_image():
     try:
-        # Placeholder for your database interaction.
-        # Replace this with your actual database query logic to fetch suggestions and likes.
-        # Example:
-        # from your_database_module import execute_query
-        # results = execute_query('SELECT suggestions, likes FROM survey_responses')
-
-        # For demonstration, let's use dummy data or assume 'execute' works
-        # If 'execute' is your custom function, make sure it's available here.
-        # Replace 'execute' with your actual database query mechanism
-        # Assuming `execute` is defined elsewhere and works
-        # You mentioned `conn = execute('SELECT ...').fetchall()` earlier.
-        # Make sure `execute` is available in this scope.
-        # For a simple example, let's assume `app.db_conn` exists or you have a global `execute`
-        
-        # Mock database fetching for demonstration. Replace with your actual database logic.
-        # You'll need to adapt this based on how your 'execute' function is set up.
-        # From your previous code, it looked like this:
-        # conn = execute('SELECT suggestions, likes FROM survey_responses').fetchall()
-        # results = conn # Assuming conn is the fetched results
-        # conn.close() # if conn is a database connection
-
-        # *** IMPORTANT: Replace the following with your actual database call ***
-        # Example using a mock:
-        dummy_responses = [
-            {'suggestions': 'Great experience', 'likes': 'Friendly staff'},
-            {'suggestions': 'Improve UI', 'likes': 'Quick service'},
-            {'suggestions': 'Good insights', 'likes': 'Easy to use'},
-            {'suggestions': None, 'likes': 'Very helpful'} # Example with missing data
-        ]
-        results = dummy_responses # Replace with your `results` from actual DB query
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT suggestions, likes FROM survey_responses")
+        results = cursor.fetchall()
+        conn.close()
 
         all_text = []
         for res in results:
-            if res and 'suggestions' in res and res['suggestions']:
+            # Access by column name if row_factory is sqlite3.Row
+            if res['suggestions']:
                 all_text.append(res['suggestions'])
-            if res and 'likes' in res and res['likes']:
+            if res['likes']:
                 all_text.append(res['likes'])
 
         wordcloud_path = generate_word_cloud(all_text, "live_wordcloud.png")
@@ -589,20 +626,13 @@ def wordcloud_image():
         print(f"Error generating or serving word cloud: {e}")
         return "Error generating word cloud.", 500
 
-# Your other routes like /upload_manual etc.
-
-# --- Word Cloud route (from your old app.py if needed elsewhere, it was removed from view_results) ---
-# If you want to serve the word cloud image on live_analytics page
-# you might reuse or adapt this route to generate it on demand.
-# For example, by calling generate_word_cloud with all data for wordcloud_image()
-
 @app.route('/upload_manual', methods=['GET', 'POST'])
 def upload_manual():
     """Handles manual CSV/XLSX file uploads for survey data."""
     if request.method == 'POST':
         # Check if the post request has the file part
         if 'file' not in request.files:
-            flash('No file part', 'error') # Added 'error' category for flashing
+            flash('No file part', 'error')
             return redirect(request.url)
 
         file = request.files['file']
@@ -611,7 +641,7 @@ def upload_manual():
             flash('No selected file', 'error')
             return redirect(request.url)
 
-        if file and allowed_file(file.filename):
+        if file and allowed_file(file.filename, ALLOWED_CSV_XLSX_EXTENSIONS):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
@@ -626,29 +656,74 @@ def upload_manual():
                     os.remove(filepath)
                     return redirect(request.url)
 
-                # --- Your Database Insertion Logic Here ---
-                # Example:
-                # for index, row in df.iterrows():
-                #     # Insert row data into your database
-                #     pass
-                # --- End Database Insertion Logic ---
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                
+                # List of expected columns in your CSV/XLSX for insertion
+                expected_columns = ['name', 'email', 'age', 'gender', 'department', 'likes', 'rating', 'suggestions', 'recommendation']
 
-                os.remove(filepath) # Clean up the uploaded file
-                flash('File successfully uploaded and processed!', 'success') # Added 'success' category
-                return redirect(url_for('home')) # Redirect to the home page
+                # Filter DataFrame to only include expected columns that exist in the DataFrame
+                # and ensure their order matches the INSERT statement.
+                # This makes it more robust to missing columns in the uploaded file.
+                df_columns = df.columns.tolist()
+                columns_to_insert = [col for col in expected_columns if col in df_columns]
+                
+                # Construct the INSERT statement dynamically based on available columns
+                placeholders = ', '.join(['?' for _ in columns_to_insert])
+                sql_insert_columns = ', '.join(columns_to_insert)
+                
+                insert_sql = f'INSERT INTO survey_responses ({sql_insert_columns}, timestamp) VALUES ({placeholders}, ?)'
 
+
+                for index, row in df.iterrows():
+                    try:
+                        timestamp = row.get('timestamp', datetime.now().isoformat())
+                        if pd.isna(timestamp):
+                            timestamp = datetime.now().isoformat()
+                        elif isinstance(timestamp, pd.Timestamp):
+                            timestamp = timestamp.isoformat()
+
+                        # Prepare data for insertion based on `columns_to_insert`
+                        data_to_insert = []
+                        for col in columns_to_insert:
+                            value = row.get(col)
+                            # Special handling for age and rating if they are numbers
+                            if col in ['age', 'rating']:
+                                data_to_insert.append(int(value) if pd.notna(value) else None)
+                            else:
+                                data_to_insert.append(value)
+                        
+                        data_to_insert.append(timestamp) # Add timestamp last
+
+
+                        cursor.execute(insert_sql, tuple(data_to_insert))
+
+                    except sqlite3.IntegrityError:
+                        flash(f'Skipping row {index+1}: Email "{row.get("email", "N/A")}" already exists or other integrity error.', 'warning')
+                        continue
+                    except Exception as e:
+                        flash(f'Error processing row {index+1} from file: {e}', 'error')
+                        print(f"Error processing row {index+1}: {e}")
+                        continue
+
+                conn.commit()
+                conn.close()
+                flash('CSV/XLSX data uploaded successfully!', 'success')
+                os.remove(filepath) # Clean up the temporary file
+                return redirect(url_for('view_results'))
             except Exception as e:
-                flash(f'An error occurred during file processing: {e}', 'error')
+                flash(f'Error processing uploaded file: {e}', 'error')
+                print(f"Error during file processing: {e}")
                 if os.path.exists(filepath):
                     os.remove(filepath)
                 return redirect(request.url)
         else:
-            flash('Allowed file types are CSV and XLSX', 'error')
+            flash('Invalid file type or no file selected. Allowed types are CSV and XLSX.', 'error')
             return redirect(request.url)
-
-    # For GET request, render the upload form
-    return render_template('upload_manual.html')
+    return render_template('upload_manual.html') # Render the upload form on GET request
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    # When running locally, Flask uses the development server
+    # For production, use a production-ready WSGI server like Gunicorn or Waitress
     app.run(debug=True)

@@ -1,0 +1,7 @@
+Flask
+pandas
+gunicorn
+wordcloud
+matplotlib 
+supabase 
+Flask-Mail
